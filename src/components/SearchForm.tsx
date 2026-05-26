@@ -3,6 +3,36 @@ import { Search, MapPin, Tag, Radius, LocateFixed, Loader } from 'lucide-react'
 import { theme } from '../themes'
 import type { SearchFilters } from '../types'
 
+const STATES = [
+    { code: 'AC', name: 'Acre' },
+    { code: 'AL', name: 'Alagoas' },
+    { code: 'AP', name: 'Amapá' },
+    { code: 'AM', name: 'Amazonas' },
+    { code: 'BA', name: 'Bahia' },
+    { code: 'CE', name: 'Ceará' },
+    { code: 'DF', name: 'Distrito Federal' },
+    { code: 'ES', name: 'Espírito Santo' },
+    { code: 'GO', name: 'Goiás' },
+    { code: 'MA', name: 'Maranhão' },
+    { code: 'MT', name: 'Mato Grosso' },
+    { code: 'MS', name: 'Mato Grosso do Sul' },
+    { code: 'MG', name: 'Minas Gerais' },
+    { code: 'PA', name: 'Pará' },
+    { code: 'PB', name: 'Paraíba' },
+    { code: 'PR', name: 'Paraná' },
+    { code: 'PE', name: 'Pernambuco' },
+    { code: 'PI', name: 'Piauí' },
+    { code: 'RJ', name: 'Rio de Janeiro' },
+    { code: 'RN', name: 'Rio Grande do Norte' },
+    { code: 'RS', name: 'Rio Grande do Sul' },
+    { code: 'RO', name: 'Rondônia' },
+    { code: 'RR', name: 'Roraima' },
+    { code: 'SC', name: 'Santa Catarina' },
+    { code: 'SP', name: 'São Paulo' },
+    { code: 'SE', name: 'Sergipe' },
+    { code: 'TO', name: 'Tocantins' },
+]
+
 const NICHE_SUGGESTIONS = [
     'Barbearia', 'Salão de beleza', 'Manicure', 'Clínica estética',
     'Restaurante', 'Lanchonete', 'Padaria', 'Petshop',
@@ -16,6 +46,7 @@ interface SearchFormProps {
 
 export default function SearchForm({ onSearch, loading }: SearchFormProps) {
     const [region, setRegion] = useState('')
+    const [state, setState] = useState('RJ')
     const [niche, setNiche] = useState('')
     const [radius, setRadius] = useState(1000)
     const [showSuggestions, setShowSuggestions] = useState(false)
@@ -49,7 +80,7 @@ export default function SearchForm({ onSearch, loading }: SearchFormProps) {
 
     function handleSubmit() {
         if (!region.trim() || !niche.trim()) return
-        onSearch({ region, niche, radius, coordinates })
+        onSearch({ region, niche, radius, state, coordinates })
     }
 
     return (
@@ -100,6 +131,31 @@ export default function SearchForm({ onSearch, loading }: SearchFormProps) {
                         }}
                     />
                 </div>
+            </div>
+
+            {/* State */}
+            <div className="flex flex-col gap-1.5">
+                <label className="text-sm" style={{ color: theme.textSecondary }}>
+                    Estado
+                </label>
+                <select
+                    value={state}
+                    onChange={e => setState(e.target.value)}
+                    className="w-full rounded-lg px-3 py-2.5 text-sm border focus:outline-none appearance-none"
+                    style={{
+                        backgroundColor: theme.bgInput,
+                        borderColor: theme.border,
+                        color: theme.textPrimary,
+                    }}
+                >
+                    {STATES.map(s => (
+                        <option key={s.code} value={s.code}
+                            style={{ backgroundColor: '#1A1D27', color: '#F4F4F5' }}
+                        >
+                            {s.code} — {s.name}
+                        </option>
+                    ))}
+                </select>
             </div>
 
             {/* Niche */}

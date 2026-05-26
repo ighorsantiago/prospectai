@@ -31,6 +31,7 @@ export interface SearchFilters {
     region: string
     niche: string
     radius: number
+    state: string
     coordinates?: { lat: number; lng: number }
 }
 

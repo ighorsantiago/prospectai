@@ -11,7 +11,7 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
 }
 
 async function fetchBusinesses(filters: SearchFilters): Promise<Business[]> {
-    const { region, niche, radius, coordinates } = filters
+    const { region, niche, radius, state, coordinates } = filters
 
     let lat: number
     let lng: number
@@ -20,8 +20,10 @@ async function fetchBusinesses(filters: SearchFilters): Promise<Business[]> {
         lat = coordinates.lat
         lng = coordinates.lng
     } else {
+        const address = encodeURIComponent(`${region}, ${state}`)
+        const components = encodeURIComponent(`administrative_area:${state}|country:BR`)
         const geoRes = await fetch(
-            `/api/places?endpoint=geocode&address=${encodeURIComponent(region)}&components=country:BR`
+            `/api/places?endpoint=geocode&address=${address}&components=${components}`
         )
         const geoData = await geoRes.json()
         if (!geoData.results?.length) throw new Error('Região não encontrada.')
