@@ -13,6 +13,7 @@ export default function Home() {
     // Perfis analisados elevados dos cards para cá, para poder filtrar
     const [profiles, setProfiles] = useState<Record<string, BusinessProfile>>({})
     const [filters, setFilters] = useState<FilterState>({ hasWebsite: 'all', minProbability: 0 })
+    const [formKey, setFormKey] = useState(0)
 
     function handleProfileFetched(businessId: string, profile: BusinessProfile) {
         setProfiles(prev => ({ ...prev, [businessId]: profile }))
@@ -22,6 +23,7 @@ export default function Home() {
         reset()
         setProfiles({})
         setFilters({ hasWebsite: 'all', minProbability: 0 })
+        setFormKey(k => k + 1) // força remontagem do SearchForm, limpando os campos
     }
 
     const hasAnalyzed = Object.keys(profiles).length > 0
@@ -52,7 +54,7 @@ export default function Home() {
             >
                 <button
                     onClick={handleReset}
-                    className="flex items-center gap-3 transition-opacity hover:opacity-70"
+                    className="flex items-center gap-3 cursor-pointer transition-opacity hover:opacity-70"
                     title="Voltar ao início"
                 >
                     <div
@@ -74,7 +76,7 @@ export default function Home() {
 
             <main className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-1">
-                    <SearchForm onSearch={search} loading={loading} />
+                    <SearchForm key={formKey} onSearch={search} loading={loading} />
                 </div>
 
                 <div className="md:col-span-2 flex flex-col gap-4">
