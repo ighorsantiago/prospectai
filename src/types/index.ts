@@ -5,22 +5,23 @@ export interface Business {
     address: string
     phone?: string
     website?: string
-    instagram?: string
     rating?: number
     totalRatings?: number
     hasWebsite: boolean
-    hasSocialMedia: boolean
     location: {
         lat: number
         lng: number
     }
 }
 
-export interface ProspectReport {
+export interface BusinessProfile {
     business: Business
-    acceptanceProbability: number     // 0-100
+    acceptanceProbability: number
     recommendedApproach: 'in_person' | 'whatsapp' | 'phone' | 'email'
     approachReason: string
+}
+
+export interface BusinessScript {
     salesPitch: string
     possibleObjections: string[]
     talkingPoints: string[]
@@ -29,5 +30,5 @@ export interface ProspectReport {
 export interface SearchFilters {
     region: string
     niche: string
-    radius: number                    // metros
+    radius: number
 }
