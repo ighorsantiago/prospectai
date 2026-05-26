@@ -31,4 +31,10 @@ export interface SearchFilters {
     region: string
     niche: string
     radius: number
+    coordinates?: { lat: number; lng: number }
+}
+
+export interface FilterState {
+    hasWebsite: 'all' | 'with' | 'without'
+    minProbability: number
 }

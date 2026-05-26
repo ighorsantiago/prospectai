@@ -11,14 +11,23 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
 }
 
 async function fetchBusinesses(filters: SearchFilters): Promise<Business[]> {
-    const { region, niche, radius } = filters
+    const { region, niche, radius, coordinates } = filters
 
-    const geoRes = await fetch(
-        `/api/places?endpoint=geocode&address=${encodeURIComponent(region)}`
-    );
-    const geoData = await geoRes.json()
-    if (!geoData.results?.length) throw new Error('Região não encontrada.');
-    const { lat, lng } = geoData.results[0].geometry.location;
+    let lat: number
+    let lng: number
+
+    if (coordinates) {
+        lat = coordinates.lat
+        lng = coordinates.lng
+    } else {
+        const geoRes = await fetch(
+            `/api/places?endpoint=geocode&address=${encodeURIComponent(region)}&components=country:BR`
+        )
+        const geoData = await geoRes.json()
+        if (!geoData.results?.length) throw new Error('Região não encontrada.')
+        lat = geoData.results[0].geometry.location.lat
+        lng = geoData.results[0].geometry.location.lng
+    }
 
     const placesRes = await fetch(
         `/api/places?endpoint=nearbysearch&location=${lat},${lng}&radius=${radius}&keyword=${encodeURIComponent(niche)}&language=pt-BR`

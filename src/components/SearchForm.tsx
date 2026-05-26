@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, MapPin, Tag, Radius } from 'lucide-react'
+import { Search, MapPin, Tag, Radius, LocateFixed, Loader } from 'lucide-react'
 import { theme } from '../themes'
 import type { SearchFilters } from '../types'
 
@@ -19,14 +19,37 @@ export default function SearchForm({ onSearch, loading }: SearchFormProps) {
     const [niche, setNiche] = useState('')
     const [radius, setRadius] = useState(1000)
     const [showSuggestions, setShowSuggestions] = useState(false)
+    const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | undefined>()
+    const [locating, setLocating] = useState(false)
 
     const filtered = NICHE_SUGGESTIONS.filter(n =>
         n.toLowerCase().includes(niche.toLowerCase()) && niche.length > 0
     )
 
+    function handleRegionChange(value: string) {
+        setRegion(value)
+        setCoordinates(undefined) // limpa coordenadas ao editar manualmente
+    }
+
+    function handleLocateMe() {
+        if (!navigator.geolocation) return
+        setLocating(true)
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setCoordinates({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+                setRegion('Minha localização')
+                setLocating(false)
+            },
+            () => {
+                setLocating(false)
+                alert('Não foi possível obter sua localização. Verifique as permissões do navegador.')
+            }
+        )
+    }
+
     function handleSubmit() {
         if (!region.trim() || !niche.trim()) return
-        onSearch({ region, niche, radius })
+        onSearch({ region, niche, radius, coordinates })
     }
 
     return (
@@ -40,24 +63,39 @@ export default function SearchForm({ onSearch, loading }: SearchFormProps) {
 
             {/* Region */}
             <div className="flex flex-col gap-1.5">
-                <label className="text-sm" style={{ color: theme.textSecondary }}>
-                    Região
-                </label>
+                <div className="flex items-center justify-between">
+                    <label className="text-sm" style={{ color: theme.textSecondary }}>
+                        Região
+                    </label>
+                    <button
+                        type="button"
+                        onClick={handleLocateMe}
+                        disabled={locating}
+                        className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-opacity hover:opacity-80 disabled:opacity-50"
+                        style={{ backgroundColor: theme.accent + '22', color: theme.accent }}
+                    >
+                        {locating
+                            ? <Loader size={11} className="animate-spin" />
+                            : <LocateFixed size={11} />
+                        }
+                        Perto de mim
+                    </button>
+                </div>
                 <div className="relative">
                     <MapPin
                         size={16}
                         className="absolute left-3 top-1/2 -translate-y-1/2"
-                        style={{ color: theme.textMuted }}
+                        style={{ color: coordinates ? theme.accent : theme.textMuted }}
                     />
                     <input
                         type="text"
-                        placeholder="Ex: Barra da Tijuca, Rio de Janeiro"
+                        placeholder="Ex: Anil, Rio de Janeiro"
                         value={region}
-                        onChange={e => setRegion(e.target.value)}
+                        onChange={e => handleRegionChange(e.target.value)}
                         className="w-full rounded-lg pl-9 pr-4 py-2.5 text-sm border focus:outline-none"
                         style={{
                             backgroundColor: theme.bgInput,
-                            borderColor: theme.border,
+                            borderColor: coordinates ? theme.accent + '66' : theme.border,
                             color: theme.textPrimary,
                         }}
                     />

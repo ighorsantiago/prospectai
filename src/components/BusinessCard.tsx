@@ -8,6 +8,7 @@ interface BusinessCardProps {
     rank: number
     onFetchProfile: (business: Business) => Promise<BusinessProfile>
     onFetchScript: (business: Business) => Promise<BusinessScript>
+    onProfileFetched?: (businessId: string, profile: BusinessProfile) => void
 }
 
 const approachConfig = {
@@ -29,7 +30,7 @@ function ScoreBadge({ score }: { score: number }) {
     )
 }
 
-export default function BusinessCard({ business, rank, onFetchProfile, onFetchScript }: BusinessCardProps) {
+export default function BusinessCard({ business, rank, onFetchProfile, onFetchScript, onProfileFetched }: BusinessCardProps) {
     const [profile, setProfile] = useState<BusinessProfile | null>(null)
     const [script, setScript] = useState<BusinessScript | null>(null)
     const [loadingProfile, setLoadingProfile] = useState(false)
@@ -45,6 +46,7 @@ export default function BusinessCard({ business, rank, onFetchProfile, onFetchSc
         try {
             const result = await onFetchProfile(business)
             setProfile(result)
+            onProfileFetched?.(business.id, result)
         } catch (err: any) {
             setError(err.message ?? 'Erro ao analisar negócio.')
         } finally {

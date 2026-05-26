@@ -1,11 +1,42 @@
+import { useState, useMemo } from 'react'
 import { Sparkles } from 'lucide-react'
 import { theme } from '../themes'
 import { useProspect } from '../hooks/useProspect'
 import SearchForm from '../components/SearchForm'
 import BusinessCard from '../components/BusinessCard'
+import FilterBar from '../components/FilterBar'
+import type { BusinessProfile, FilterState } from '../types'
 
 export default function Home() {
     const { businesses, loading, error, search, fetchProfile, fetchScript } = useProspect()
+
+    // Perfis analisados elevados dos cards para cá, para poder filtrar
+    const [profiles, setProfiles] = useState<Record<string, BusinessProfile>>({})
+    const [filters, setFilters] = useState<FilterState>({ hasWebsite: 'all', minProbability: 0 })
+
+    function handleProfileFetched(businessId: string, profile: BusinessProfile) {
+        setProfiles(prev => ({ ...prev, [businessId]: profile }))
+    }
+
+    const hasAnalyzed = Object.keys(profiles).length > 0
+
+    const filteredBusinesses = useMemo(() => {
+        return businesses.filter(b => {
+            // Filtro por site
+            if (filters.hasWebsite === 'with' && !b.hasWebsite) return false
+            if (filters.hasWebsite === 'without' && b.hasWebsite) return false
+
+            // Filtro por probabilidade — só afeta cards já analisados
+            if (filters.minProbability > 0) {
+                const profile = profiles[b.id]
+                if (profile && profile.acceptanceProbability < filters.minProbability) return false
+            }
+
+            return true
+        })
+    }, [businesses, filters, profiles])
+
+    const hiddenCount = businesses.length - filteredBusinesses.length
 
     return (
         <div className="min-h-screen" style={{ backgroundColor: theme.bgPrimary }}>
@@ -35,6 +66,7 @@ export default function Home() {
                 </div>
 
                 <div className="md:col-span-2 flex flex-col gap-4">
+                    {/* Estado vazio */}
                     {!loading && !error && businesses.length === 0 && (
                         <div
                             className="rounded-2xl border flex flex-col items-center justify-center py-20 gap-3"
@@ -47,6 +79,7 @@ export default function Home() {
                         </div>
                     )}
 
+                    {/* Loading */}
                     {loading && (
                         <div
                             className="rounded-2xl border flex flex-col items-center justify-center py-20 gap-3"
@@ -62,6 +95,7 @@ export default function Home() {
                         </div>
                     )}
 
+                    {/* Erro */}
                     {error && (
                         <div
                             className="rounded-2xl border px-5 py-4 text-sm"
@@ -71,20 +105,54 @@ export default function Home() {
                         </div>
                     )}
 
+                    {/* Resultados */}
                     {!loading && businesses.length > 0 && (
                         <>
-                            <p className="text-sm" style={{ color: theme.textMuted }}>
-                                {businesses.length} negócios encontrados
-                            </p>
-                            {businesses.map((business, index) => (
+                            <FilterBar
+                                filters={filters}
+                                onChange={f => setFilters(f)}
+                                hasAnalyzed={hasAnalyzed}
+                            />
+
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm" style={{ color: theme.textMuted }}>
+                                    {filteredBusinesses.length} negócio{filteredBusinesses.length !== 1 ? 's' : ''} encontrado{filteredBusinesses.length !== 1 ? 's' : ''}
+                                    {hiddenCount > 0 && (
+                                        <span style={{ color: theme.textMuted }}>
+                                            {' '}· {hiddenCount} ocultado{hiddenCount !== 1 ? 's' : ''} pelo filtro
+                                        </span>
+                                    )}
+                                </p>
+                            </div>
+
+                            {filteredBusinesses.map((business, index) => (
                                 <BusinessCard
                                     key={business.id}
                                     business={business}
                                     rank={index + 1}
                                     onFetchProfile={fetchProfile}
                                     onFetchScript={fetchScript}
+                                    onProfileFetched={handleProfileFetched}
                                 />
                             ))}
+
+                            {filteredBusinesses.length === 0 && (
+                                <div
+                                    className="rounded-2xl border flex flex-col items-center justify-center py-12 gap-2"
+                                    style={{ backgroundColor: theme.bgSecondary, borderColor: theme.border }}
+                                >
+                                    <p className="text-sm" style={{ color: theme.textMuted }}>
+                                        Nenhum resultado para os filtros aplicados
+                                    </p>
+                                    <button
+                                        onClick={() => setFilters({ hasWebsite: 'all', minProbability: 0 })}
+                                        className="text-xs underline"
+                                        style={{ color: theme.accent }}
+                                    >
+                                        Limpar filtros
+                                    </button>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
