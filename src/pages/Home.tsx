@@ -8,7 +8,7 @@ import FilterBar from '../components/FilterBar'
 import type { BusinessProfile, FilterState } from '../types'
 
 export default function Home() {
-    const { businesses, loading, error, search, fetchProfile, fetchScript } = useProspect()
+    const { businesses, loading, error, search, reset, fetchProfile, fetchScript } = useProspect()
 
     // Perfis analisados elevados dos cards para cá, para poder filtrar
     const [profiles, setProfiles] = useState<Record<string, BusinessProfile>>({})
@@ -16,6 +16,12 @@ export default function Home() {
 
     function handleProfileFetched(businessId: string, profile: BusinessProfile) {
         setProfiles(prev => ({ ...prev, [businessId]: profile }))
+    }
+
+    function handleReset() {
+        reset()
+        setProfiles({})
+        setFilters({ hasWebsite: 'all', minProbability: 0 })
     }
 
     const hasAnalyzed = Object.keys(profiles).length > 0
@@ -44,20 +50,26 @@ export default function Home() {
                 className="border-b px-6 py-4 flex items-center gap-3"
                 style={{ borderColor: theme.border, backgroundColor: theme.bgSecondary }}
             >
-                <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: theme.accent }}
+                <button
+                    onClick={handleReset}
+                    className="flex items-center gap-3 transition-opacity hover:opacity-70"
+                    title="Voltar ao início"
                 >
-                    <Sparkles size={16} style={{ color: theme.textOnAccent }} />
-                </div>
-                <div>
-                    <h1 className="font-bold text-sm" style={{ color: theme.textPrimary }}>
-                        ProspectAI
-                    </h1>
-                    <p className="text-xs" style={{ color: theme.textMuted }}>
-                        Prospecta aí · Sant.IA.Go
-                    </p>
-                </div>
+                    <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: theme.accent }}
+                    >
+                        <Sparkles size={16} style={{ color: theme.textOnAccent }} />
+                    </div>
+                    <div className="text-left">
+                        <h1 className="font-bold text-sm" style={{ color: theme.textPrimary }}>
+                            ProspectAI
+                        </h1>
+                        <p className="text-xs" style={{ color: theme.textMuted }}>
+                            Prospecta aí · Sant.IA.Go
+                        </p>
+                    </div>
+                </button>
             </header>
 
             <main className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">

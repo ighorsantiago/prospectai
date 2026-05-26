@@ -172,5 +172,11 @@ export function useProspect() {
         }
     }, []);
 
-    return { businesses, loading, error, search, fetchProfile, fetchScript }
+    function reset() {
+        setBusinesses([])
+        setError(null)
+        setLoading(false)
+    }
+
+    return { businesses, loading, error, search, reset, fetchProfile, fetchScript }
 }
